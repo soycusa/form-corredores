@@ -144,7 +144,112 @@ function renderField(q) {
   return wrapper;
 }
 
+function validateForm() {
+  let valid = true;
+  document.querySelectorAll('.field').forEach(field => {
+    const errorEl = field.querySelector('.error');
+    errorEl.textContent = '';
+    const requerido = field.dataset.requerido === 'true';
+    const tipo = field.dataset.tipo;
+    const id = field.dataset.id;
+    let value = '';
+    if (tipo === 'select' || tipo === 'select_other') {
+      const checked = field.querySelector(`input[name="${id}"]:checked`);
+      value = checked ? checked.value : '';
+    } else {
+      const input = field.querySelector(`input[name="${id}"]`);
+      value = input ? input.value.trim() : '';
+    }
+    if (requerido && !value) {
+      errorEl.textContent = 'Este campo es obligatorio.';
+      valid = false;
+    }
+  });
+  return valid;
+}
+
+function collectRespuestas() {
+  const respuestas = {};
+  document.querySelectorAll('.field').forEach(field => {
+    const tipo = field.dataset.tipo;
+    const id = field.dataset.id;
+    if (tipo === 'select' || tipo === 'select_other') {
+      const checked = field.querySelector(`input[name="${id}"]:checked`);
+      let value = checked ? checked.value : '';
+      if (tipo === 'select_other' && value === 'Otra') {
+        const otro = field.querySelector(`input[name="${id}_otro"]`);
+        value = otro && otro.value.trim() ? otro.value.trim() : 'Otra';
+      }
+      respuestas[id] = value;
+    } else {
+      const input = field.querySelector(`input[name="${id}"]`);
+      respuestas[id] = input ? input.value.trim() : '';
+    }
+  });
+  return respuestas;
+}
+
+async function sendRespuestas(respuestas) {
+  const res = await fetch(CONFIG.WEB_APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ respuestas })
+  });
+  if (!res.ok) throw new Error('bad status ' + res.status);
+}
+
+const PENDING_KEY = 'form_corredores_pending';
+
+function savePending(respuestas) {
+  const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+  pending.push(respuestas);
+  localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+}
+
+async function flushPending() {
+  const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+  if (pending.length === 0) return;
+  const remaining = [];
+  for (const respuestas of pending) {
+    try {
+      await sendRespuestas(respuestas);
+    } catch (err) {
+      remaining.push(respuestas);
+    }
+  }
+  localStorage.setItem(PENDING_KEY, JSON.stringify(remaining));
+}
+
+function handleSubmit(event) {
+  event.preventDefault();
+  const statusEl = document.getElementById('status');
+  if (!validateForm()) return;
+  const respuestas = collectRespuestas();
+  const submitBtn = document.querySelector('#dynamic-form button[type="submit"]');
+  submitBtn.disabled = true;
+  statusEl.textContent = 'Enviando...';
+  sendRespuestas(respuestas)
+    .then(() => {
+      statusEl.textContent = '¡Gracias! Respuesta enviada.';
+      document.getElementById('dynamic-form').reset();
+      submitBtn.disabled = false;
+    })
+    .catch(() => {
+      savePending(respuestas);
+      statusEl.innerHTML = 'No se pudo enviar, se guardó localmente. <button id="retry-send">Reintentar</button>';
+      submitBtn.disabled = false;
+      document.getElementById('retry-send').addEventListener('click', () => {
+        statusEl.textContent = 'Reintentando...';
+        flushPending().then(() => {
+          statusEl.textContent = '¡Gracias! Respuesta enviada.';
+        });
+      });
+    });
+}
+
+document.getElementById('dynamic-form').addEventListener('submit', handleSubmit);
 loadSchema();
+flushPending();
 </script>
 </body>
 </html>
