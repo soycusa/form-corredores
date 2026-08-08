@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta corredores</title>
+<style>
+  :root {
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-bg: #f8fafc;
+    --color-card: #ffffff;
+    --color-text: #0f172a;
+    --color-border: #cbd5e1;
+    --font-family: system-ui, -apple-system, sans-serif;
+  }
+  body {
+    font-family: var(--font-family);
+    background: var(--color-bg);
+    color: var(--color-text);
+    margin: 0;
+    padding: 2rem 1rem;
+  }
+  .card {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .field { margin-bottom: 1.25rem; }
+  label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+  input[type="text"], input[type="number"] {
+    width: 100%; padding: 0.5rem; border: 1px solid var(--color-border);
+    border-radius: 8px; box-sizing: border-box;
+  }
+  .radio-option { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+  button {
+    background: var(--color-primary); color: white; border: none;
+    padding: 0.7rem 1.4rem; border-radius: 8px; cursor: pointer; font-size: 1rem;
+  }
+  button:hover { background: var(--color-primary-hover); }
+  button:disabled { background: var(--color-border); cursor: not-allowed; }
+  .error { color: #dc2626; font-size: 0.85rem; margin-top: 0.3rem; }
+  #status { margin-top: 1rem; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Encuesta corredores</h1>
+    <form id="dynamic-form"></form>
+    <div id="status"></div>
+  </div>
+  <script>
+    const CONFIG = {
+      WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbysg44T4VjYg4yJLHS8jNAwBfaap668hmNy5_xlxnMAvfJ_3tG0XmcwWUpeEX0lZa7o/exec'
+    };
+  </script>
+  <script>
+async function loadSchema() {
+  const statusEl = document.getElementById('status');
+  try {
+    const res = await fetch(`${CONFIG.WEB_APP_URL}?action=schema`);
+    if (!res.ok) throw new Error('bad status ' + res.status);
+    const questions = await res.json();
+    renderForm(questions);
+  } catch (err) {
+    statusEl.textContent = 'No se pudo cargar el formulario, reintentá.';
+    statusEl.innerHTML += ' <button id="retry-load">Reintentar</button>';
+    document.getElementById('retry-load').addEventListener('click', loadSchema);
+  }
+}
+
+function renderForm(questions) {
+  const form = document.getElementById('dynamic-form');
+  form.innerHTML = '';
+  questions.forEach(q => form.appendChild(renderField(q)));
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'submit';
+  submitBtn.textContent = 'Enviar';
+  form.appendChild(submitBtn);
+}
+
+function renderField(q) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'field';
+  wrapper.dataset.id = q.id;
+  wrapper.dataset.tipo = q.tipo;
+  wrapper.dataset.requerido = q.requerido;
+
+  const label = document.createElement('label');
+  label.textContent = q.texto;
+  wrapper.appendChild(label);
+
+  if (q.tipo === 'number') {
+    const [min, max] = q.opciones;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.name = q.id;
+    if (min !== undefined) input.min = min;
+    if (max !== undefined) input.max = max;
+    wrapper.appendChild(input);
+  } else if (q.tipo === 'text') {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = q.id;
+    wrapper.appendChild(input);
+  } else if (q.tipo === 'select' || q.tipo === 'select_other') {
+    q.opciones.forEach(opt => {
+      const optWrap = document.createElement('div');
+      optWrap.className = 'radio-option';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = q.id;
+      radio.value = opt;
+      radio.id = `${q.id}-${opt}`;
+      const optLabel = document.createElement('label');
+      optLabel.htmlFor = radio.id;
+      optLabel.textContent = opt;
+      optLabel.style.fontWeight = 'normal';
+      optWrap.appendChild(radio);
+      optWrap.appendChild(optLabel);
+      wrapper.appendChild(optWrap);
+    });
+    if (q.tipo === 'select_other') {
+      const otherInput = document.createElement('input');
+      otherInput.type = 'text';
+      otherInput.name = `${q.id}_otro`;
+      otherInput.placeholder = 'Especificar';
+      otherInput.disabled = true;
+      otherInput.style.marginTop = '0.4rem';
+      wrapper.appendChild(otherInput);
+      wrapper.addEventListener('change', () => {
+        const selected = wrapper.querySelector(`input[name="${q.id}"]:checked`);
+        otherInput.disabled = !(selected && selected.value === 'Otra');
+      });
+    }
+  }
+
+  const errorEl = document.createElement('div');
+  errorEl.className = 'error';
+  wrapper.appendChild(errorEl);
+  return wrapper;
+}
+
+loadSchema();
+</script>
+</body>
+</html>
