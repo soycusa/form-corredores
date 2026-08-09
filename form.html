@@ -65,7 +65,7 @@
     transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
   }
   .step {
-    flex: 0 0 100%;
+    flex: 0 0 auto;
     padding: 1.5rem 2rem 2rem;
     display: flex;
     flex-direction: column;
@@ -256,10 +256,13 @@ async function loadSchema() {
 function renderForm(questions) {
   const track = document.getElementById('steps-track');
   track.innerHTML = '';
+  const n = questions.length;
+  track.style.width = `${n * 100}%`;
   questions.forEach((q, i) => {
     const step = renderField(q);
     step.classList.add('step');
     step.dataset.index = i;
+    step.style.width = `${100 / n}%`;
     track.appendChild(step);
   });
   currentStep = 0;
@@ -317,7 +320,7 @@ function renderField(q) {
       wrapper.addEventListener('change', () => {
         const selected = wrapper.querySelector(`input[name="${q.id}"]:checked`);
         otherInput.disabled = !(selected && selected.value === 'Otra');
-        if (!otherInput.disabled) otherInput.focus();
+        if (!otherInput.disabled) otherInput.focus({ preventScroll: true });
       });
     }
   }
@@ -365,7 +368,7 @@ function goToStep(index) {
   currentStep = index;
 
   const track = document.getElementById('steps-track');
-  track.style.transform = `translateX(-${currentStep * 100}%)`;
+  track.style.transform = `translateX(-${currentStep * (100 / QUESTIONS.length)}%)`;
 
   document.getElementById('progress-fill').style.width = `${((currentStep + 1) / QUESTIONS.length) * 100}%`;
   document.getElementById('step-counter').textContent = `Pregunta ${currentStep + 1} de ${QUESTIONS.length}`;
@@ -376,7 +379,7 @@ function goToStep(index) {
   document.getElementById('btn-submit').style.display = isLast ? '' : 'none';
 
   const currentInput = document.querySelector(`.step[data-index="${currentStep}"] input`);
-  if (currentInput) currentInput.focus();
+  if (currentInput) currentInput.focus({ preventScroll: true });
 }
 
 function collectRespuestas() {
