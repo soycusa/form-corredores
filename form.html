@@ -6,50 +6,227 @@
 <title>Encuesta corredores</title>
 <style>
   :root {
-    --color-primary: #2563eb;
-    --color-primary-hover: #1d4ed8;
-    --color-bg: #f8fafc;
+    --color-primary: #4f46e5;
+    --color-primary-hover: #4338ca;
+    --color-bg-start: #eef2ff;
+    --color-bg-end: #e0e7ff;
     --color-card: #ffffff;
     --color-text: #0f172a;
-    --color-border: #cbd5e1;
-    --font-family: system-ui, -apple-system, sans-serif;
+    --color-text-soft: #64748b;
+    --color-border: #e2e8f0;
+    --color-error: #dc2626;
+    --font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   }
+  * { box-sizing: border-box; }
   body {
     font-family: var(--font-family);
-    background: var(--color-bg);
+    background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
     color: var(--color-text);
     margin: 0;
-    padding: 2rem 1rem;
-  }
-  .card {
-    max-width: 480px;
-    margin: 0 auto;
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 1.5rem;
   }
-  .field { margin-bottom: 1.25rem; }
-  label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+  .app {
+    width: 100%;
+    max-width: 560px;
+    background: var(--color-card);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px -15px rgba(79, 70, 229, 0.25);
+    overflow: hidden;
+  }
+  .progress-track {
+    height: 6px;
+    background: var(--color-border);
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-primary);
+    transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .step-counter {
+    padding: 1rem 2rem 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-text-soft);
+    text-transform: uppercase;
+  }
+  .steps-viewport {
+    overflow: hidden;
+    position: relative;
+    min-height: 320px;
+  }
+  .steps-track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .step {
+    flex: 0 0 100%;
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 320px;
+  }
+  .step label {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 1.5rem;
+  }
   input[type="text"], input[type="number"] {
-    width: 100%; padding: 0.5rem; border: 1px solid var(--color-border);
-    border-radius: 8px; box-sizing: border-box;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
   }
-  .radio-option { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+  input[type="text"]:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+  .radio-option {
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+  .radio-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .radio-option label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  .radio-option label:hover {
+    border-color: var(--color-primary);
+    background: #f5f3ff;
+  }
+  .radio-option label::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .radio-option input[type="radio"]:checked + label {
+    border-color: var(--color-primary);
+    background: #eef2ff;
+  }
+  .radio-option input[type="radio"]:checked + label::before {
+    border-color: var(--color-primary);
+    border-width: 5px;
+  }
+  .radio-option input[type="radio"]:focus-visible + label {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  .otro-input {
+    margin-top: 0.6rem;
+  }
+  .error {
+    color: var(--color-error);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+    min-height: 1.1rem;
+  }
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem 1.75rem;
+  }
   button {
-    background: var(--color-primary); color: white; border: none;
-    padding: 0.7rem 1.4rem; border-radius: 8px; cursor: pointer; font-size: 1rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
   }
-  button:hover { background: var(--color-primary-hover); }
-  button:disabled { background: var(--color-border); cursor: not-allowed; }
-  .error { color: #dc2626; font-size: 0.85rem; margin-top: 0.3rem; }
-  #status { margin-top: 1rem; font-size: 0.9rem; }
+  button:active { transform: scale(0.97); }
+  #btn-back {
+    background: transparent;
+    color: var(--color-text-soft);
+    padding: 0.7rem 0.5rem;
+  }
+  #btn-back:hover { color: var(--color-text); }
+  #btn-back:disabled { visibility: hidden; }
+  #btn-next, #btn-submit {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.8rem 1.8rem;
+    margin-left: auto;
+  }
+  #btn-next:hover, #btn-submit:hover { background: var(--color-primary-hover); }
+  #btn-submit:disabled { background: var(--color-border); cursor: not-allowed; }
+  #status {
+    padding: 0 2rem 1.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-soft);
+  }
+  #status button {
+    background: none;
+    color: var(--color-primary);
+    text-decoration: underline;
+    padding: 0;
+    font-size: 0.9rem;
+  }
+  .final-screen {
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .final-screen .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  .final-screen h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+  }
+  .final-screen p {
+    color: var(--color-text-soft);
+    margin: 0;
+  }
+  @media (max-width: 480px) {
+    .step label { font-size: 1.2rem; }
+    .step, .step-counter, .nav-buttons, #status { padding-left: 1.25rem; padding-right: 1.25rem; }
+  }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Encuesta corredores</h1>
-    <form id="dynamic-form"></form>
+  <div class="app">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="step-counter" id="step-counter"></div>
+    <form id="dynamic-form" novalidate>
+      <div class="steps-viewport">
+        <div class="steps-track" id="steps-track"></div>
+      </div>
+      <div class="nav-buttons" id="nav-buttons">
+        <button type="button" id="btn-back">← Atrás</button>
+        <button type="button" id="btn-next">Siguiente →</button>
+        <button type="submit" id="btn-submit" style="display:none">Enviar</button>
+      </div>
+    </form>
     <div id="status"></div>
   </div>
   <script>
@@ -58,33 +235,40 @@
     };
   </script>
   <script>
+let QUESTIONS = [];
+let currentStep = 0;
+
 async function loadSchema() {
   const statusEl = document.getElementById('status');
   try {
     const res = await fetch(`${CONFIG.WEB_APP_URL}?action=schema`);
     if (!res.ok) throw new Error('bad status ' + res.status);
     const questions = await res.json();
+    QUESTIONS = questions;
     renderForm(questions);
   } catch (err) {
     statusEl.textContent = 'No se pudo cargar el formulario, reintentá.';
-    statusEl.innerHTML += ' <button id="retry-load">Reintentar</button>';
+    statusEl.innerHTML += ' <button type="button" id="retry-load">Reintentar</button>';
     document.getElementById('retry-load').addEventListener('click', loadSchema);
   }
 }
 
 function renderForm(questions) {
-  const form = document.getElementById('dynamic-form');
-  form.innerHTML = '';
-  questions.forEach(q => form.appendChild(renderField(q)));
-  const submitBtn = document.createElement('button');
-  submitBtn.type = 'submit';
-  submitBtn.textContent = 'Enviar';
-  form.appendChild(submitBtn);
+  const track = document.getElementById('steps-track');
+  track.innerHTML = '';
+  questions.forEach((q, i) => {
+    const step = renderField(q);
+    step.classList.add('step');
+    step.dataset.index = i;
+    track.appendChild(step);
+  });
+  currentStep = 0;
+  goToStep(0);
+  document.getElementById('nav-buttons').style.display = '';
 }
 
 function renderField(q) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'field';
   wrapper.dataset.id = q.id;
   wrapper.dataset.tipo = q.tipo;
   wrapper.dataset.requerido = q.requerido;
@@ -118,10 +302,15 @@ function renderField(q) {
       const optLabel = document.createElement('label');
       optLabel.htmlFor = radio.id;
       optLabel.textContent = opt;
-      optLabel.style.fontWeight = 'normal';
       optWrap.appendChild(radio);
       optWrap.appendChild(optLabel);
       wrapper.appendChild(optWrap);
+
+      radio.addEventListener('change', () => {
+        if (opt !== 'Otra') {
+          setTimeout(() => goToStep(currentStep + 1), 250);
+        }
+      });
     });
     if (q.tipo === 'select_other') {
       const otherInput = document.createElement('input');
@@ -129,11 +318,12 @@ function renderField(q) {
       otherInput.name = `${q.id}_otro`;
       otherInput.placeholder = 'Especificar';
       otherInput.disabled = true;
-      otherInput.style.marginTop = '0.4rem';
+      otherInput.className = 'otro-input';
       wrapper.appendChild(otherInput);
       wrapper.addEventListener('change', () => {
         const selected = wrapper.querySelector(`input[name="${q.id}"]:checked`);
         otherInput.disabled = !(selected && selected.value === 'Otra');
+        if (!otherInput.disabled) otherInput.focus();
       });
     }
   }
@@ -144,33 +334,60 @@ function renderField(q) {
   return wrapper;
 }
 
+function validateStep(index) {
+  const field = document.querySelector(`.step[data-index="${index}"]`);
+  if (!field) return true;
+  const errorEl = field.querySelector('.error');
+  errorEl.textContent = '';
+  const requerido = field.dataset.requerido === 'true';
+  const tipo = field.dataset.tipo;
+  const id = field.dataset.id;
+  let value = '';
+  if (tipo === 'select' || tipo === 'select_other') {
+    const checked = field.querySelector(`input[name="${id}"]:checked`);
+    value = checked ? checked.value : '';
+  } else {
+    const input = field.querySelector(`input[name="${id}"]`);
+    value = input ? input.value.trim() : '';
+  }
+  if (requerido && !value) {
+    errorEl.textContent = 'Este campo es obligatorio.';
+    return false;
+  }
+  return true;
+}
+
 function validateForm() {
   let valid = true;
-  document.querySelectorAll('.field').forEach(field => {
-    const errorEl = field.querySelector('.error');
-    errorEl.textContent = '';
-    const requerido = field.dataset.requerido === 'true';
-    const tipo = field.dataset.tipo;
-    const id = field.dataset.id;
-    let value = '';
-    if (tipo === 'select' || tipo === 'select_other') {
-      const checked = field.querySelector(`input[name="${id}"]:checked`);
-      value = checked ? checked.value : '';
-    } else {
-      const input = field.querySelector(`input[name="${id}"]`);
-      value = input ? input.value.trim() : '';
-    }
-    if (requerido && !value) {
-      errorEl.textContent = 'Este campo es obligatorio.';
-      valid = false;
-    }
-  });
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    if (!validateStep(i)) valid = false;
+  }
   return valid;
+}
+
+function goToStep(index) {
+  if (index > currentStep && !validateStep(currentStep)) return;
+  if (index < 0 || index >= QUESTIONS.length) return;
+  currentStep = index;
+
+  const track = document.getElementById('steps-track');
+  track.style.transform = `translateX(-${currentStep * 100}%)`;
+
+  document.getElementById('progress-fill').style.width = `${((currentStep + 1) / QUESTIONS.length) * 100}%`;
+  document.getElementById('step-counter').textContent = `Pregunta ${currentStep + 1} de ${QUESTIONS.length}`;
+  document.getElementById('btn-back').disabled = currentStep === 0;
+
+  const isLast = currentStep === QUESTIONS.length - 1;
+  document.getElementById('btn-next').style.display = isLast ? 'none' : '';
+  document.getElementById('btn-submit').style.display = isLast ? '' : 'none';
+
+  const currentInput = document.querySelector(`.step[data-index="${currentStep}"] input`);
+  if (currentInput) currentInput.focus();
 }
 
 function collectRespuestas() {
   const respuestas = {};
-  document.querySelectorAll('.field').forEach(field => {
+  document.querySelectorAll('.step').forEach(field => {
     const tipo = field.dataset.tipo;
     const id = field.dataset.id;
     if (tipo === 'select' || tipo === 'select_other') {
@@ -220,34 +437,63 @@ async function flushPending() {
   localStorage.setItem(PENDING_KEY, JSON.stringify(remaining));
 }
 
+function showFinalScreen(message) {
+  document.querySelector('.app').innerHTML = `
+    <div class="final-screen">
+      <div class="icon">🏁</div>
+      <h2>¡Gracias!</h2>
+      <p>${message}</p>
+    </div>`;
+}
+
 function handleSubmit(event) {
   event.preventDefault();
   const statusEl = document.getElementById('status');
-  if (!validateForm()) return;
+  if (!validateForm()) {
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      if (!validateStep(i)) { goToStep(i); break; }
+    }
+    return;
+  }
   const respuestas = collectRespuestas();
-  const submitBtn = document.querySelector('#dynamic-form button[type="submit"]');
+  const submitBtn = document.getElementById('btn-submit');
   submitBtn.disabled = true;
   statusEl.textContent = 'Enviando...';
   sendRespuestas(respuestas)
     .then(() => {
-      statusEl.textContent = '¡Gracias! Respuesta enviada.';
-      document.getElementById('dynamic-form').reset();
-      submitBtn.disabled = false;
+      showFinalScreen('Tu respuesta fue registrada.');
     })
     .catch(() => {
       savePending(respuestas);
-      statusEl.innerHTML = 'No se pudo enviar, se guardó localmente. <button id="retry-send">Reintentar</button>';
+      statusEl.innerHTML = 'No se pudo enviar, se guardó localmente. <button type="button" id="retry-send">Reintentar</button>';
       submitBtn.disabled = false;
       document.getElementById('retry-send').addEventListener('click', () => {
         statusEl.textContent = 'Reintentando...';
         flushPending().then(() => {
-          statusEl.textContent = '¡Gracias! Respuesta enviada.';
+          showFinalScreen('Tu respuesta fue registrada.');
         });
       });
     });
 }
 
 document.getElementById('dynamic-form').addEventListener('submit', handleSubmit);
+document.getElementById('btn-next').addEventListener('click', () => goToStep(currentStep + 1));
+document.getElementById('btn-back').addEventListener('click', () => goToStep(currentStep - 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const active = document.activeElement;
+  if (active && active.tagName === 'INPUT' && active.type === 'text' && active.classList.contains('otro-input')) {
+    e.preventDefault();
+  }
+  const isLast = currentStep === QUESTIONS.length - 1;
+  if (isLast) {
+    document.getElementById('dynamic-form').requestSubmit();
+  } else {
+    e.preventDefault();
+    goToStep(currentStep + 1);
+  }
+});
+
 loadSchema();
 flushPending();
 </script>
