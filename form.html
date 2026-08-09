@@ -305,12 +305,6 @@ function renderField(q) {
       optWrap.appendChild(radio);
       optWrap.appendChild(optLabel);
       wrapper.appendChild(optWrap);
-
-      radio.addEventListener('change', () => {
-        if (opt !== 'Otra') {
-          setTimeout(() => goToStep(currentStep + 1), 250);
-        }
-      });
     });
     if (q.tipo === 'select_other') {
       const otherInput = document.createElement('input');
